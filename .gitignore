@@ -1,0 +1,34 @@
+# Node.js
+node_modules/
+
+# Logs
+*.log
+
+# Arquivos de ambiente
+.env
+
+# Diretórios de build e output
+dist/
+build/
+
+# Configurações de IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Sistema de arquivos
+.DS_Store
+Thumbs.db
+
+# Outros arquivos temporários
+*.tmp
+*.bak
+*.swp
+*.swo
+*.swn
+*.old
+*.orig
