@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
-const { body, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
+const createError = require('http-errors'); // Creating fancy HTTP errors
 
 const router = express.Router();
 
@@ -9,6 +10,7 @@ const pool = new Pool({
     ssl: process.env.DATABASE_URL.includes("localhost") ? false : { rejectUnauthorized: false }
 });
 
+// Functions to interact with the database
 const getUsers = async (limit, offset) => {
     const result = await pool.query('SELECT * FROM users LIMIT $1 OFFSET $2', [limit, offset]);
     return result.rows;
@@ -33,102 +35,108 @@ const deleteUser = async (id) => {
     await pool.query('DELETE FROM users WHERE id = $1', [id]);
 };
 
-// endpoints
+//  Middleware to ensure names are valid
+const validateName = [
+    body('name')
+        .trim() // Remove any extra spaces
+        .isString().withMessage('Name must be a string, not a number or something else!')
+        .notEmpty().withMessage('Name is required. Can’t leave it blank!')
+        .isLength({ min: 3, max: 50 }).withMessage('Name must be between 3 and 50 characters long. Not too short, not too long!')
+];
 
-// CREATE
-router.post('/', [
-    body('name').isString().notEmpty().withMessage('Name is required')
-], async (req, res) => {
+//  Middleware to ensure IDs are valid
+const validateId = [
+    param('id').isInt({ gt: 0 }).withMessage('ID must be a positive integer. No negative numbers or non-numbers!')
+];
+
+//  Middleware to handle validation errors
+const handleValidationErrors = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+    next();
+};
 
+// Global error handler for unexpected issues
+const errorHandler = (err, req, res, next) => {
+    console.error('Unexpected Error:', err.message);
+    res.status(err.status || 500).json({ error: err.message || 'Oops! Something went wrong.' });
+};
+
+// CREATE - Adding a new user
+router.post('/', validateName, handleValidationErrors, async (req, res, next) => {
     try {
         const { name } = req.body;
         const newUser = await createUser(name);
         res.status(201).json(newUser);
     } catch (error) {
-        console.error('Error creating user:', error.message);
-        res.status(400).json({ error: error.message });
+        next(createError(500, 'Error creating user: ' + error.message));
     }
 });
 
-// READ ALL with pagination
-router.get('/', async (req, res) => {
+//  READ ALL - Get a list of users with pagination
+router.get('/', async (req, res, next) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
         const offset = (page - 1) * limit;
+
+        if (isNaN(limit) || isNaN(offset)) {
+            return res.status(400).json({ error: 'Invalid pagination parameters. Make sure the numbers are correct!' });
+        }
+
+        // Some filter
         const users = await getUsers(limit, offset);
         res.json(users);
     } catch (error) {
-        console.error('Error fetching users:', error.message);
-        res.status(500).json({ error: error.message });
+        next(createError(500, 'Error fetching users by ID: ' + error.message));
     }
 });
 
-// READ ONE
-router.get('/:id', async (req, res) => {
-    const userId = parseInt(req.params.id, 10);
-    if (isNaN(userId)) {
-        return res.status(400).json({ error: 'Invalid ID' });
-    }
-    
+// READ ONE - Get a user by ID
+router.get('/:id', validateId, handleValidationErrors, async (req, res, next) => {
     try {
+        const userId = parseInt(req.params.id, 10);
         const user = await getUserById(userId);
         if (user) {
             res.json(user);
         } else {
-            res.status(404).json({ error: 'User not found' });
+            next(createError(404, 'User not found'));
         }
     } catch (error) {
-        console.error('Error fetching user by ID:', error.message);
-        res.status(500).json({ error: error.message });
+        next(createError(500, 'Error fetching user by ID: ' + error.message));
     }
 });
 
-// UPDATE
-router.put('/:id', [
-    body('name').isString().notEmpty().withMessage('Name is required')
-], async (req, res) => {
-    const userId = parseInt(req.params.id, 10); 
-    if (isNaN(userId)) {
-        return res.status(400).json({ error: 'Invalid ID' });
-    }
-    
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
+// UPDATE - Modify an existing user
+router.put('/:id', validateId, validateName, handleValidationErrors, async (req, res, next) => {
     try {
+        const userId = parseInt(req.params.id, 10);
         const { name } = req.body;
         const updatedUser = await updateUser(userId, name);
         if (updatedUser) {
             res.json(updatedUser);
         } else {
-            res.status(404).json({ error: 'User not found' });
+            next(createError(404, 'User not found. Maybe they ran away?'));
         }
     } catch (error) {
-        console.error('Error updating user:', error.message);
-        res.status(400).json({ error: error.message });
+        next(createError(500, 'Error updating user: ' + error.message));
     }
 });
 
-// DELETE
-router.delete('/:id', async (req, res) => {
-    const userId = parseInt(req.params.id, 10); 
-    if (isNaN(userId)) {
-        return res.status(400).json({ error: 'Invalid ID' });
-    }
-
+// DELETE - Remove a user 
+router.delete('/:id', validateId, handleValidationErrors, async (req, res, next) => {
     try {
+        const userId = parseInt(req.params.id, 10);
         await deleteUser(userId);
-        res.status(204).send();
+        res.status(204).send(); // No content left, user deleted!
     } catch (error) {
-        console.error('Error deleting user:', error.message);
-        res.status(500).json({ error: error.message });
+        next(createError(500, 'Error deleting user: ' + error.message));
     }
 });
+
+// Use global error handler
+router.use(errorHandler);
 
 module.exports = router;
