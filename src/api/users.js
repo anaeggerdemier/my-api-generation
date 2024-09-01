@@ -68,9 +68,11 @@ const errorHandler = (err, req, res, next) => {
 router.post('/', validateName, handleValidationErrors, async (req, res, next) => {
     try {
         const { name } = req.body;
+        console.log(`Creating user with name: ${name}`);
         const newUser = await createUser(name);
         res.status(201).json(newUser);
     } catch (error) {
+        console.error('Error creating user:', error);
         next(createError(500, 'Error creating user: ' + error.message));
     }
 });
@@ -86,11 +88,10 @@ router.get('/', async (req, res, next) => {
             return res.status(400).json({ error: 'Invalid pagination parameters. Make sure the numbers are correct!' });
         }
 
-        // Some filter
         const users = await getUsers(limit, offset);
         res.json(users);
     } catch (error) {
-        next(createError(500, 'Error fetching users by ID: ' + error.message));
+        next(createError(500, 'Error fetching users: ' + error.message));
     }
 });
 
@@ -98,6 +99,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:id', validateId, handleValidationErrors, async (req, res, next) => {
     try {
         const userId = parseInt(req.params.id, 10);
+        console.log(`Fetching user with ID: ${userId}`);
         const user = await getUserById(userId);
         if (user) {
             res.json(user);
@@ -105,6 +107,7 @@ router.get('/:id', validateId, handleValidationErrors, async (req, res, next) =>
             next(createError(404, 'User not found'));
         }
     } catch (error) {
+        console.error('Error fetching user by ID:', error);
         next(createError(500, 'Error fetching user by ID: ' + error.message));
     }
 });
