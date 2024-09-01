@@ -8,7 +8,7 @@ const swaggerUi = require('swagger-ui-express');
 const yaml = require('yamljs');
 
 const app = express();
-const swaggerDocument = yaml.load('./swagger/swagger.yaml');
+const swaggerDocument = yaml.load(path.join(__dirname, 'swagger', 'swagger.yaml'));
 
 // Middlewares
 app.use(express.json());
