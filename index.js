@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const userRoutes = require('./src/api/users');
 const cors = require('cors');
 const compression = require('compression');
@@ -9,12 +10,15 @@ const yaml = require('yamljs');
 const app = express();
 const swaggerDocument = yaml.load('./swagger/swagger.yaml');
 
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(compression());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+app.use('/swagger.yaml', express.static(path.join(__dirname, 'swagger', 'swagger.yaml')));
 
 app.use('/api/users', userRoutes);
 
