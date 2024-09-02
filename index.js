@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const userRoutes = require('./src/api/users');
@@ -6,6 +7,7 @@ const cors = require('cors');
 const compression = require('compression');
 const swaggerUi = require('swagger-ui-express'); 
 const yaml = require('yamljs');
+const helmet = require('helmet');
 
 const app = express();
 const swaggerDocument = yaml.load(path.join(__dirname, 'swagger', 'swagger.yaml'));
@@ -15,6 +17,22 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(compression());
+
+// Safety configuration with Helmet
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://unpkg.com"],
+            styleSrc: ["'self'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "'unsafe-inline'"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:"],
+            connectSrc: ["'self'"],
+            frameSrc: ["'self'"],
+            frameAncestors: ["'self'"]
+        }
+    }
+}));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
