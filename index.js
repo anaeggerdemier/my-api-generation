@@ -23,15 +23,19 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://unpkg.com"],
-            styleSrc: ["'self'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+            styleSrc: ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:"],
             connectSrc: ["'self'"],
             frameSrc: ["'self'"],
             frameAncestors: ["'self'"]
         }
-    }
+    },
+    referrerPolicy: { policy: 'strict-origin' },
+    xssFilter: true,
+    noSniff: true,
+    frameguard: { action: 'sameorigin' }
 }));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
