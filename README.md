@@ -1,6 +1,6 @@
 # User Management API
 
-**User Management API** é uma aplicação RESTful desenvolvida com Node.js e Express para gerenciar usuários em um banco de dados PostgreSQL. Suporta operações CRUD e inclui funcionalidades adicionais como paginação e validação de dados.
+**User Management API** is a RESTful application developed with Node.js and Express to manage users in a PostgreSQL database. It supports CRUD operations and includes additional features such as pagination and data validation.
 
 ## Description
 
