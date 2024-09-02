@@ -6,7 +6,7 @@
 
 This project implements a RESTful API for managing users using Node.js and PostgreSQL. It supports CRUD operations with input validation and error handling. The API is documented with Swagger (OpenAPI) for improved developer integration and provides scalable, secure management of user data.
 
-## Stacks
+## Tech Stack
 
 - [![Node.js](https://img.shields.io/badge/Node.js-20.8.0-green)](https://nodejs.org/)
 - [![Express](https://img.shields.io/badge/Express-4.18.2-blue)](https://expressjs.com/)
