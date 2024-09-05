@@ -26,46 +26,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(compression());
 
-// Helmet Secutiry 
 app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: [
-                "'self'",
-                "https://cdn.jsdelivr.net",
-                "https://cdnjs.cloudflare.com",
-                "https://unpkg.com"
-            ],
-            styleSrc: [
-                "'self'",
-                "https://fonts.googleapis.com",
-                "'unsafe-inline'"
-            ],
-            fontSrc: [
-                "'self'",
-                "https://fonts.gstatic.com"
-            ],
-            imgSrc: [
-                "'self'",
-                "data:"
-            ],
-            connectSrc: [
-                "'self'",
-                "https://cdn.jsdelivr.net",
-                "https://cdnjs.cloudflare.com",
-                "https://unpkg.com",
-                "https://my-api-generation.onrender.com" 
-            ],
-            frameSrc: ["'self'"],
-            frameAncestors: ["'self'"]
-        }
-    },
+    // contentSecurityPolicy: {
+    //     directives: {
+    //         ...
+    //     }
+    // },
     referrerPolicy: { policy: 'strict-origin' },
     xssFilter: true,
     noSniff: true,
     frameguard: { action: 'sameorigin' }
 }));
+
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
