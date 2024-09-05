@@ -15,44 +15,14 @@ const swaggerDocument = yaml.load(path.join(__dirname, 'swagger', 'swagger.yaml'
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors());
+app.use(cors({
+    origin: ['https://my-api-generation.onrender.com', 'http://localhost:3000']
+}));
 
 app.use(compression());
 
 app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: [
-                "'self'",
-                "https://cdn.jsdelivr.net",
-                "https://cdnjs.cloudflare.com",
-                "https://unpkg.com",
-                "https://cdnjs.cloudflare.com"
-            ],
-            styleSrc: [
-                "'self'",
-                "https://fonts.googleapis.com",
-                "'unsafe-inline'"
-            ],
-            fontSrc: [
-                "'self'",
-                "https://fonts.gstatic.com"
-            ],
-            imgSrc: [
-                "'self'",
-                "data:"
-            ],
-            connectSrc: [
-                "'self'",
-                "https://cdn.jsdelivr.net",
-                "https://cdnjs.cloudflare.com",
-                "https://unpkg.com"
-            ],
-            frameSrc: ["'self'"],
-            frameAncestors: ["'self'"]
-        }
-    },
+    contentSecurityPolicy: false,  
     referrerPolicy: { policy: 'strict-origin' },
     frameguard: { action: 'sameorigin' }
 }));
