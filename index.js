@@ -16,13 +16,23 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors({
-    origin: ['https://my-api-generation.onrender.com', 'http://localhost:3000']
+    origin: ['https://my-api-generation.onrender.com'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(compression());
 
 app.use(helmet({
-    contentSecurityPolicy: false,  
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://unpkg.com"],
+            connectSrc: ["'self'", "https://my-api-generation.onrender.com"], 
+            imgSrc: ["'self'", "data:"],
+            styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+        },
+    },
     referrerPolicy: { policy: 'strict-origin' },
     frameguard: { action: 'sameorigin' }
 }));
