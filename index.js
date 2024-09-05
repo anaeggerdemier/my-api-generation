@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config(); 
 
 const express = require('express');
 const path = require('path');
@@ -12,32 +12,50 @@ const helmet = require('helmet');
 const app = express();
 const swaggerDocument = yaml.load(path.join(__dirname, 'swagger', 'swagger.yaml'));
 
-app.use(cors({
-    origin: [
-        'http://localhost:3000', 
-        'https://my-api-generation.onrender.com'
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors());
+
 app.use(compression());
 
 app.use(helmet({
-    // contentSecurityPolicy: {
-    //     directives: {
-    //         ...
-    //     }
-    // },
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com",
+                "https://unpkg.com",
+                "https://cdnjs.cloudflare.com"
+            ],
+            styleSrc: [
+                "'self'",
+                "https://fonts.googleapis.com",
+                "'unsafe-inline'"
+            ],
+            fontSrc: [
+                "'self'",
+                "https://fonts.gstatic.com"
+            ],
+            imgSrc: [
+                "'self'",
+                "data:"
+            ],
+            connectSrc: [
+                "'self'",
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com",
+                "https://unpkg.com"
+            ],
+            frameSrc: ["'self'"],
+            frameAncestors: ["'self'"]
+        }
+    },
     referrerPolicy: { policy: 'strict-origin' },
-    xssFilter: true,
-    noSniff: true,
     frameguard: { action: 'sameorigin' }
 }));
-
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
@@ -60,8 +78,11 @@ app.get('/', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+    console.error('Error stack:', err.stack);
+    res.status(err.status || 500).json({
+        message: err.message || 'Something went wrong',
+        error: process.env.NODE_ENV === 'development' ? err : {}
+    });
 });
 
 const PORT = process.env.PORT || 3000;
