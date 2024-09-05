@@ -5,29 +5,58 @@ const path = require('path');
 const userRoutes = require('./src/api/users');
 const cors = require('cors');
 const compression = require('compression');
-const swaggerUi = require('swagger-ui-express'); 
+const swaggerUi = require('swagger-ui-express');
 const yaml = require('yamljs');
 const helmet = require('helmet');
 
 const app = express();
 const swaggerDocument = yaml.load(path.join(__dirname, 'swagger', 'swagger.yaml'));
 
+app.use(cors({
+    origin: [
+        'http://localhost:3000', 
+        'https://my-api-generation.onrender.com'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
 app.use(compression());
 
-// Safety configuration with Helmet
+// Helmet Secutiry 
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
-            styleSrc: ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:"],
-            connectSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com",
+                "https://unpkg.com"
+            ],
+            styleSrc: [
+                "'self'",
+                "https://fonts.googleapis.com",
+                "'unsafe-inline'"
+            ],
+            fontSrc: [
+                "'self'",
+                "https://fonts.gstatic.com"
+            ],
+            imgSrc: [
+                "'self'",
+                "data:"
+            ],
+            connectSrc: [
+                "'self'",
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com",
+                "https://unpkg.com",
+                "https://my-api-generation.onrender.com" 
+            ],
             frameSrc: ["'self'"],
             frameAncestors: ["'self'"]
         }
