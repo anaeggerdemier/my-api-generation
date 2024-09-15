@@ -35,10 +35,11 @@ const deleteUser = async (id) => {
     await pool.query('DELETE FROM users WHERE id = $1', [id]);
 };
 
-//  Middleware to ensure names are valid
+//  Middleware to ensure names are valid and sanitized
 const validateName = [
     body('name')
         .trim() // Remove any extra spaces
+        .escape() // Escape HTML characters to prevent XSS
         .isString().withMessage('Name must be a string, not a number or something else!')
         .notEmpty().withMessage('Name is required. Can’t leave it blank!')
         .isLength({ min: 3, max: 50 }).withMessage('Name must be between 3 and 50 characters long. Not too short, not too long!')
